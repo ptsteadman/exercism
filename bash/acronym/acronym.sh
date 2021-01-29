@@ -11,14 +11,12 @@
 # read -d flag specifies the "line" delimiter
 # for in array loop syntax
 
-IFS='- ' read -a words -d '' <<< "$1"
+IFS='- ' read -ra words -d '' <<< "$1"
 
 for word in "${words[@]}"; do
   stripped=${word//[^a-zA-Z]/}
   first_char=${stripped:0:1}
-  if ! [[ -z $first_char ]]; then 
-    printf $(tr '[a-z]' '[A-Z]' <<< $first_char)
-  fi
+  printf "%s" $(tr '[a-z]' '[A-Z]' <<< "$first_char")
 done
 
 
