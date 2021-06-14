@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Returns true if the input is valid per the Luhn formula.
+// Valid returns true if the input is valid per the Luhn formula.
 func Valid(input string) bool {
 	inputSpacesStripped := strings.ReplaceAll(input, " ", "")
 	// Must be a string of all digits, at least two in length
