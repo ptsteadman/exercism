@@ -1,0 +1,16 @@
+{
+  "configurations": {
+    "run": {
+      "adapter": "vscode-go",
+      "default": true,
+      "configuration": {
+        "request": "launch",
+        "program": "${workspaceRoot}",
+        "mode": "test",
+        "dlvToolPath": "$HOME/go/bin/dlv",
+        "trace": "log",
+        "env": { "GO111MODULE": "off" }
+      }
+    }
+  }
+}
