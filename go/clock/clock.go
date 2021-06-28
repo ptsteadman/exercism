@@ -9,9 +9,28 @@ type Clock struct {
 	minutes int
 }
 
+// mod is a modulus function where the result has the same sign as the divisor
+func mod(a, b int) int {
+	return (a%b + b) % b
+}
+
+// roundToNegativeInfinityDivision implements integer division where results are rounded towards negative
+// infinity in the case of negative operands
+func roundToNegativeInfinityDivision(a, b int) int {
+	if a < 0 {
+		return (a - (b - 1)) / b
+	}
+	return a / b
+}
+
 // New takes hours and minutes and ints and returns a normalized wall clock time
 func New(hours int, minutes int) Clock {
-	return Clock{hours: 0, minutes: 0}.Add(hours*60 + minutes)
+	c := Clock{}
+	hoursFromMinuteOverflow := roundToNegativeInfinityDivision(minutes, 60)
+	c.hours = hours + hoursFromMinuteOverflow
+	c.hours = mod(c.hours, 24)
+	c.minutes = mod(minutes, 60)
+	return c
 }
 
 // String outputs the 24 hour clock time in a format like 00:00
@@ -19,54 +38,12 @@ func (c Clock) String() string {
 	return fmt.Sprintf("%02d:%02d", c.hours, c.minutes)
 }
 
-func (c Clock) addHour() Clock {
-	c.hours += 1
-	if c.hours > 23 {
-		c.hours -= 24
-	}
-	return c
-}
-
-// Add adds the given number minutes and returns a new Clock
+// Add adds the given number of minutes and returns a new Clock
 func (c Clock) Add(minutes int) Clock {
-	if minutes < 0 {
-		return c.Subtract(-minutes)
-	}
-
-	for minutes > 59 {
-		minutes -= 60
-		c = c.addHour()
-	}
-	c.minutes += minutes
-	if c.minutes > 59 {
-		c.minutes -= 60
-		c = c.addHour()
-	}
-	return c
+	return New(c.hours, c.minutes+minutes)
 }
 
-func (c Clock) subHour() Clock {
-	c.hours -= 1
-	if c.hours < 0 {
-		c.hours += 24
-	}
-	return c
-}
-
-// Subtract subtracts the given number minutes and returns a new Clock
+// Subtract subtracts the given number of minutes and returns a new Clock
 func (c Clock) Subtract(minutes int) Clock {
-	if minutes < 0 {
-		return c.Add(-minutes)
-	}
-
-	for minutes > 59 {
-		minutes -= 60
-		c = c.subHour()
-	}
-	c.minutes -= minutes
-	if c.minutes < 0 {
-		c.minutes += 60
-		c = c.subHour()
-	}
-	return c
+	return New(c.hours, c.minutes-minutes)
 }
