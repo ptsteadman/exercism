@@ -29,18 +29,6 @@ func (record TeamRecord) GetMatchesPlayed() int {
 	return record.Wins + record.Draws + record.Losses
 }
 
-// ByPoints implements sorting a list of TeamRecords by points
-type ByPoints []TeamRecord
-
-func (a ByPoints) Len() int { return len(a) }
-func (a ByPoints) Less(i, j int) bool {
-	if a[i].GetPoints() == a[j].GetPoints() {
-		return a[i].Name < a[j].Name
-	}
-	return a[i].GetPoints() > a[j].GetPoints()
-}
-func (a ByPoints) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-
 // Tally reads lines of game results from an input io.Reader r, sums up statistics,
 // and writes a sorted results table to io.Writer w
 func Tally(r io.Reader, w io.Writer) error {
@@ -70,16 +58,17 @@ func Tally(r io.Reader, w io.Writer) error {
 			records[result[1]] = &TeamRecord{Name: result[1]}
 		}
 		// update tally
-		if result[2] == "win" {
+		switch result[2] {
+		case "win":
 			records[result[0]].Wins++
 			records[result[1]].Losses++
-		} else if result[2] == "loss" {
+		case "loss":
 			records[result[0]].Losses++
 			records[result[1]].Wins++
-		} else if result[2] == "draw" {
+		case "draw":
 			records[result[1]].Draws++
 			records[result[0]].Draws++
-		} else {
+		default:
 			return errors.New("invalid game outcome")
 		}
 	}
@@ -92,7 +81,12 @@ func Tally(r io.Reader, w io.Writer) error {
 	for _, v := range records {
 		sortedRecords = append(sortedRecords, *v)
 	}
-	sort.Sort(ByPoints(sortedRecords))
+	sort.Slice(sortedRecords, func(i, j int) bool {
+		if sortedRecords[i].GetPoints() == sortedRecords[j].GetPoints() {
+			return sortedRecords[i].Name < sortedRecords[j].Name
+		}
+		return sortedRecords[i].GetPoints() > sortedRecords[j].GetPoints()
+	})
 
 	// output tab-formatted results
 	writer := tabwriter.NewWriter(w, 1, 1, 0, ' ', tabwriter.Debug)
